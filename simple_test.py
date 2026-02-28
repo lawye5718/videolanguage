@@ -73,11 +73,14 @@ def test_cinecast_tts():
             logger.error(f"❌ Cinecast API连接失败: {e}")
             return False
         
-        # 测试TTS接口
-        tts_url = "http://localhost:8888/tts"
+        # 测试TTS接口 (OpenAI兼容格式)
+        tts_url = "http://localhost:8888/v1/audio/speech"
         test_payload = {
-            "text": "这是一个测试句子。",
-            "voice": "aiden"
+            "model": "qwen3-tts",
+            "input": "这是一个测试句子。",
+            "voice": "aiden",
+            "response_format": "mp3",
+            "speed": 1.0
         }
         
         try:

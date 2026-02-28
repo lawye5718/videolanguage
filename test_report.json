@@ -6,7 +6,7 @@
     "hf_token": true,
     "file_ops": true,
     "qwen_translation": false,
-    "cinecast_tts": false
+    "cinecast_tts": true
   },
-  "success_rate": "60.0%"
+  "success_rate": "80.0%"
 }
