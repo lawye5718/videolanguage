@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-02-28 05:30:00",
+  "environment": "videolang (conda)",
+  "python_version": "3.10.19 | packaged by conda-forge | (main, Jan 26 2026, 23:57:06) [Clang 19.1.7 ]",
+  "test_results": {
+    "demucs": true,
+    "whisperx": true,
+    "pyannote": false,
+    "torch": true,
+    "torchaudio": true,
+    "librosa": true,
+    "numpy": true,
+    "soundfile": true,
+    "ffmpeg": true
+  },
+  "summary": {
+    "total_tests": 9,
+    "passed_tests": 8,
+    "failed_tests": 1,
+    "success_rate": "88.9%"
+  }
+}
