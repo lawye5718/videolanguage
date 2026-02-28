@@ -25,10 +25,10 @@ def test_qwen_translation():
     logger.info("🔤 测试Qwen翻译功能...")
     
     try:
-        from tools.step035_translation_qwen import get_qwen_api_config, qwen_response
+        from tools.step035_translation_qwen import get_llm_api_config, llm_response
         
         # 测试配置加载
-        api_key, base_url, model_name = get_qwen_api_config()
+        api_key, base_url, model_name = get_llm_api_config()
         logger.info(f"✅ Qwen配置加载成功")
         logger.info(f"   Model: {model_name}")
         logger.info(f"   Base URL: {base_url}")
@@ -39,7 +39,7 @@ def test_qwen_translation():
             {"role": "user", "content": f"请将以下英文翻译为中文：{test_text}"}
         ]
         
-        response = qwen_response(messages)
+        response = llm_response(messages)
         if response:
             logger.info("✅ Qwen翻译测试成功")
             logger.info(f"   原文: {test_text}")
