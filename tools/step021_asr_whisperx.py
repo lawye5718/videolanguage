@@ -32,11 +32,18 @@ def load_whisper_model(model_name: str = 'large', download_root = 'models/ASR/wh
     if whisper_model is not None:
         return
     if device == 'auto':
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        if torch.backends.mps.is_available():
+            device = 'mps'
+            compute_type = 'float32'  # Mac MPS 对 float16 支持不完善
+        else:
+            device = 'cpu'
+            compute_type = 'int8'
     logger.info(f'Loading WhisperX model: {model_name}')
     t_start = time.time()
-    if device=='cpu':
-        whisper_model = whisperx.load_model(model_name, download_root=download_root, device=device, compute_type='int8')
+    if device == 'cpu':
+        whisper_model = whisperx.load_model(model_name, download_root=download_root, device=device, compute_type=compute_type)
+    elif device == 'mps':
+        whisper_model = whisperx.load_model(model_name, download_root=download_root, device=device, compute_type=compute_type)
     else:
         whisper_model = whisperx.load_model(model_name, download_root=download_root, device=device)
     t_end = time.time()
@@ -47,7 +54,10 @@ def load_align_model(language='en', device='auto', model_dir='models/ASR/whisper
     if align_model is not None and language_code == language:
         return
     if device == 'auto':
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        if torch.backends.mps.is_available():
+            device = 'mps'
+        else:
+            device = 'cpu'
     language_code = language
     t_start = time.time()
     align_model, align_metadata = whisperx.load_align_model(
@@ -60,7 +70,10 @@ def load_diarize_model(device='auto'):
     if diarize_model is not None:
         return
     if device == 'auto':
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        if torch.backends.mps.is_available():
+            device = 'mps'
+        else:
+            device = 'cpu'
     t_start = time.time()
     try:
         diarize_model = whisperx.DiarizationPipeline(use_auth_token=os.getenv('HF_TOKEN'), device=device)
@@ -74,7 +87,10 @@ def load_diarize_model(device='auto'):
 
 def whisperx_transcribe_audio(wav_path, model_name: str = 'large', download_root='models/ASR/whisper', device='auto', batch_size=32, diarization=True,min_speakers=None, max_speakers=None):
     if device == 'auto':
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        if torch.backends.mps.is_available():
+            device = 'mps'
+        else:
+            device = 'cpu'
     load_whisper_model(model_name, download_root, device)
     rec_result = whisper_model.transcribe(wav_path, batch_size=batch_size)
     

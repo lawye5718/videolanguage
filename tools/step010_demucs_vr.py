@@ -8,7 +8,7 @@ import torch
 import gc
 
 # 全局变量
-auto_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+auto_device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
 separator = None
 model_loaded = False  # 新增标志，跟踪模型是否已加载
 current_model_config = {}  # 新增变量，存储当前加载模型的配置
@@ -209,6 +209,16 @@ def separate_all_audio_under_folder(root_folder: str, model_name: str = "htdemuc
         release_model()
         raise
 
+
+def clear_memory():
+    """
+    清理内存和显存（跨平台兼容）
+    """
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    elif torch.backends.mps.is_available():
+        torch.mps.empty_cache()  # 强制释放 Mac 统一内存
 
 if __name__ == '__main__':
     folder = r"videos"

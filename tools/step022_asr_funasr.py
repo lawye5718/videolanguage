@@ -17,7 +17,7 @@ def load_funasr_model(device='auto'):
     if funasr_model is not None:
         return
     if device == 'auto':
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        device = 'mps' if torch.backends.mps.is_available() else 'cpu'
     logger.info(f'Loading FunASR model')
     t_start = time.time()
 
@@ -46,7 +46,7 @@ def load_funasr_model(device='auto'):
 
 def funasr_transcribe_audio(wav_path, device='auto', batch_size=1, diarization=True):
     if device == 'auto':
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        device = 'mps' if torch.backends.mps.is_available() else 'cpu'
     load_funasr_model(device)
     rec_result = funasr_model.generate(
         wav_path,
