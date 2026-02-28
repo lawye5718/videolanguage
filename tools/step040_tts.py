@@ -7,12 +7,14 @@ from loguru import logger
 import numpy as np
 
 from .utils import save_wav, save_wav_norm
-# Lazy Import: 注释掉不需要的TTS模块以避免ModuleNotFoundError
+# --- 重点修改区域开始 ---
+# 将下面这些原有的冗余 TTS 引擎全部注释掉，防止它们触发底层的 ImportError
 # from .step041_tts_bytedance import tts as bytedance_tts  # 需要bytedance依赖
 # from .step042_tts_xtts import tts as xtts_tts  # 需要Coqui TTS库
 # from .step043_tts_cosyvoice import tts as cosyvoice_tts  # 需要CosyVoice依赖
 from .step044_tts_edge_tts import tts as edge_tts  # Edge-TTS通常可用
-# from .step045_tts_cinecast import generate_tts_with_emotion_clone  # 情绪配音模块
+from .step045_tts_cinecast import generate_tts_with_emotion_clone  # 我们的核心Cinecast TTS模块
+# --- 重点修改区域结束 ---
 from .cn_tx import TextNorm
 from audiostretchy.stretch import stretch_audio
 normalizer = TextNorm()

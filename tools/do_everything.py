@@ -12,16 +12,17 @@ from .step021_asr_whisperx import init_whisperx, init_diarize
 from .step022_asr_funasr import init_funasr
 from .step030_translation import translate_all_transcript_under_folder
 from .step040_tts import generate_all_wavs_under_folder
-from .step042_tts_xtts import init_TTS
-from .step043_tts_cosyvoice import init_cosyvoice
+# 注释掉不需要的TTS模块导入
+# from .step042_tts_xtts import init_TTS
+# from .step043_tts_cosyvoice import init_cosyvoice
 from .step050_synthesize_video import synthesize_all_video_under_folder
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # 跟踪模型初始化状态
 models_initialized = {
     'demucs': False,
-    'xtts': False,
-    'cosyvoice': False,
+    # 'xtts': False,  # 注释掉XTTS
+    # 'cosyvoice': False,  # 注释掉CosyVoice
     'whisperx': False,
     'diarize': False,
     'funasr': False
@@ -58,15 +59,16 @@ def initialize_models(tts_method, asr_method, diarization):
             else:
                 logger.info("Demucs模型已初始化，跳过")
 
-            # TTS模型初始化
-            if tts_method == 'xtts' and not models_initialized['xtts']:
-                executor.submit(init_TTS)
-                models_initialized['xtts'] = True
-                logger.info("XTTS模型初始化完成")
-            elif tts_method == 'cosyvoice' and not models_initialized['cosyvoice']:
-                executor.submit(init_cosyvoice)
-                models_initialized['cosyvoice'] = True
-                logger.info("CosyVoice模型初始化完成")
+            # TTS模型初始化 - 只保留Cinecast和EdgeTTS
+            # if tts_method == 'xtts' and not models_initialized['xtts']:
+            #     executor.submit(init_TTS)
+            #     models_initialized['xtts'] = True
+            #     logger.info("XTTS模型初始化完成")
+            # elif tts_method == 'cosyvoice' and not models_initialized['cosyvoice']:
+            #     executor.submit(init_cosyvoice)
+            #     models_initialized['cosyvoice'] = True
+            #     logger.info("CosyVoice模型初始化完成")
+            # 注：我们现在使用Cinecast API进行TTS，无需本地模型初始化
 
             # ASR模型初始化
             if asr_method == 'WhisperX':

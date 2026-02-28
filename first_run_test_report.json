@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-02-28 11:38:42",
+  "test_video": "/Users/yuanliang/Downloads/p.mp4",
+  "steps": {
+    "demucs_separation": false,
+    "speech_recognition": false,
+    "translation": false,
+    "emotion_tts": false
+  },
+  "summary": {
+    "total_steps": 4,
+    "successful_steps": 0,
+    "failed_steps": 4,
+    "success_rate": "0.0%"
+  }
+}

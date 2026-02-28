@@ -1,0 +1,35 @@
+[11:22:33] 系统初始化完成，准备就绪
+[11:23:07] 已选择本地视频文件: /Users/yuanliang/Downloads/p.mp4
+[11:23:47] --------------------------------------------------
+[11:23:47] 开始处理 - 2026-02-28 11:23:47
+[11:23:47] 视频URL: /Users/yuanliang/Downloads/p.mp4
+[11:23:47] 开始处理...
+[11:23:47] 进度更新: 0% - 初始化处理...
+[11:23:47] 视频文件夹: videos
+[11:23:47] 视频URL: /Users/yuanliang/Downloads/p.mp4
+[11:23:47] 分辨率: 1080p
+[11:23:47] --------------------------------------------------
+[11:23:47] 处理参数:
+[11:23:47] 下载视频数量: 5
+[11:23:47] 分辨率: 1080p
+[11:23:47] 人声分离模型: htdemucs_ft
+[11:23:47] 计算设备: auto
+[11:23:47] 移位次数: 5
+[11:23:47] ASR模型: WhisperX
+[11:23:47] WhisperX模型大小: large
+[11:23:47] 翻译方法: LLM
+[11:23:47] TTS方法: EdgeTTS
+[11:23:47] --------------------------------------------------
+[11:23:47] 进度更新: 5% - 下载视频... (5%)
+[11:23:47] 处理失败: name 'do_everything' is not defined
+
+堆栈跟踪:
+Traceback (most recent call last):
+  File "/Users/yuanliang/superstar/superstar3.1/projects/videolanguage/tabs/full_auto_tab.py", line 300, in process_thread
+    result, video_path = do_everything(
+NameError: name 'do_everything' is not defined
+
+[11:23:47] 进度更新: 0% - 处理失败
+[11:23:47] 处理完成 - 2026-02-28 11:23:47
+[11:23:47] 结果: 处理失败: name 'do_everything' is not defined
+[11:23:47] 未生成视频或视频路径无效

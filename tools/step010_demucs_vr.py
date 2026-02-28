@@ -1,5 +1,5 @@
 import shutil
-from demucs.api import Separator
+from demucs.separate import main as demucs_main, get_parser
 import os
 from loguru import logger
 import time
@@ -28,7 +28,7 @@ def init_demucs():
 
 
 def load_model(model_name: str = "htdemucs_ft", device: str = 'auto', progress: bool = True,
-               shifts: int = 5) -> Separator:
+               shifts: int = 5):
     """
     加载Demucs模型。
     如果相同配置的模型已加载，直接返回现有模型而不重新加载。

@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-02-28 11:40:38",
+  "demo_type": "快速概念验证",
+  "tests": {
+    "translation": true,
+    "tts": true,
+    "whisperx_import": true,
+    "demucs_import": true
+  },
+  "summary": {
+    "total_tests": 4,
+    "successful_tests": 4,
+    "failed_tests": 0,
+    "success_rate": "100.0%"
+  }
+}

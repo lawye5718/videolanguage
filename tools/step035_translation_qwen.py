@@ -107,6 +107,9 @@ def llm_response(messages):
     )
     return response.choices[0].message.content
 
+# 为兼容性提供别名
+qwen_response = llm_response
+
 if __name__ == '__main__':
     test_message = [{"role": "user", "content": "你好，介绍一下你自己"}]
     response = llm_response(test_message)

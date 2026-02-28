@@ -10,9 +10,9 @@ import subprocess
 
 from ui_components import VideoPlayer
 
-# 尝试导入实际的功能模块
+# 直接导入实际的功能模块
+from tools.do_everything import do_everything
 try:
-    from tools.do_everything import do_everything
     from tools.utils import SUPPORT_VOICE
 except ImportError:
     # 定义临时的支持语音列表
