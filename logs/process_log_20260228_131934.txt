@@ -1,0 +1,40 @@
+[13:18:31] 系统初始化完成，准备就绪
+[13:18:48] 已选择本地视频文件: /Users/yuanliang/Downloads/p.mp4
+[13:18:54] --------------------------------------------------
+[13:18:54] 开始处理 - 2026-02-28 13:18:54
+[13:18:54] 视频URL: /Users/yuanliang/Downloads/p.mp4
+[13:18:54] 开始处理...
+[13:18:54] 进度更新: 0% - 初始化处理...
+[13:18:54] 视频文件夹: videos
+[13:18:54] 视频URL: /Users/yuanliang/Downloads/p.mp4
+[13:18:54] 分辨率: 1080p
+[13:18:54] --------------------------------------------------
+[13:18:54] 处理参数:
+[13:18:54] 下载视频数量: 5
+[13:18:54] 分辨率: 1080p
+[13:18:54] 人声分离模型: htdemucs_ft
+[13:18:54] 计算设备: auto
+[13:18:54] 移位次数: 5
+[13:18:54] ASR模型: WhisperX
+[13:18:54] WhisperX模型大小: large
+[13:18:54] 翻译方法: LLM
+[13:18:54] TTS方法: EdgeTTS
+[13:18:54] --------------------------------------------------
+[13:18:54] 进度更新: 5% - 下载视频... (5%)
+[13:18:54] 进度更新: 100% - 处理完成!
+[13:18:54] 处理完成: 处理失败: 人声分离失败: cannot unpack non-iterable NoneType object
+Traceback (most recent call last):
+  File "/Users/yuanliang/superstar/superstar3.1/projects/videolanguage/tools/do_everything.py", line 163, in process_video
+    status, vocals_path, _ = separate_all_audio_under_folder(
+TypeError: cannot unpack non-iterable NoneType object
+
+[13:18:54] 处理完成 - 2026-02-28 13:18:54
+[13:18:54] 结果: 处理失败: 人声分离失败: cannot unpack non-iterable NoneType object
+Traceback (most recent call last):
+  File "/Users/yuanliang/superstar/superstar3.1/projects/videolanguage/tools/do_everything.py", line 163, in process_video
+    status, vocals_path, _ = separate_all_audio_under_folder(
+TypeError: cannot unpack non-iterable NoneType object
+
+[13:18:54] 未生成视频或视频路径无效
+[13:19:02] 日志已保存到: logs/process_log_20260228_131902.txt
+[13:19:04] 日志已保存到: logs/process_log_20260228_131904.txt
