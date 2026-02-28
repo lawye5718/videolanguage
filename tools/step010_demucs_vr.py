@@ -85,6 +85,11 @@ def separate_all_audio_under_folder(root_folder, model_name="htdemucs_ft", devic
 # 兼容性空壳函数 (为了骗过 do_everything.py 的模型初始化与释放检查)
 # =================================================================
 
+def init_demucs(*args, **kwargs):
+    """兼容旧接口的空壳函数"""
+    print("💡 [Demucs 优化版] CLI 模式无需预初始化模型...")
+    return True
+
 def load_model(*args, **kwargs):
     """
     因为我们现在使用的是纯 CLI 命令行模式，
