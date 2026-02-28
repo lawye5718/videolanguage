@@ -58,7 +58,23 @@ tts_support_languages = {
 }
 
 def generate_wavs(method, folder, target_language='中文', voice = 'zh-CN-XiaoxiaoNeural'):
-    assert method in ['xtts', 'bytedance', 'cosyvoice', 'EdgeTTS']
+    # 强制将无关的 TTS 方法劫持或报错
+    if method == 'Cinecast':
+        # 调用Cinecast情绪配音功能
+        from .step045_tts_cinecast import generate_tts_with_emotion_clone
+        # 这里需要实现与原有逻辑兼容的调用
+        logger.info("✅ 使用Cinecast进行情绪配音")
+        # TODO: 实现与generate_wavs接口兼容的Cinecast调用
+        pass
+    elif method == 'EdgeTTS':
+        # 如果您还想保留微软免费TTS作为备用，可以留着它
+        logger.info("ℹ️  使用EdgeTTS作为备用")
+        pass
+    else:
+        # 直接抛出错误，防止它去加载卸载了的 XTTS 等模型
+        raise ValueError(f"❌ 系统已升级纯净版，不支持 {method}！请在界面选择 Cinecast。")
+    
+    assert method in ['Cinecast', 'EdgeTTS']
     transcript_path = os.path.join(folder, 'translation.json')
     output_folder = os.path.join(folder, 'wavs')
     if not os.path.exists(output_folder):
@@ -72,7 +88,7 @@ def generate_wavs(method, folder, target_language='中文', voice = 'zh-CN-Xiaox
     num_speakers = len(speakers)
     logger.info(f'Found {num_speakers} speakers')
 
-    if target_language not in tts_support_languages[method]:
+    if target_language not in tts_support_languages.get(method, []):
         logger.error(f'{method} does not support {target_language}')
         return f'{method} does not support {target_language}'
         
@@ -82,17 +98,23 @@ def generate_wavs(method, folder, target_language='中文', voice = 'zh-CN-Xiaox
         text = preprocess_text(line['translation'])
         output_path = os.path.join(output_folder, f'{str(i).zfill(4)}.wav')
         speaker_wav = os.path.join(folder, 'SPEAKER', f'{speaker}.wav')
-        # if num_speakers == 1:
-            # bytedance_tts(text, output_path, speaker_wav, voice_type='BV701_streaming')
         
-        if method == 'bytedance':
-            bytedance_tts(text, output_path, speaker_wav, target_language = target_language)
-        elif method == 'xtts':
-            xtts_tts(text, output_path, speaker_wav, target_language = target_language)
-        elif method == 'cosyvoice':
-            cosyvoice_tts(text, output_path, speaker_wav, target_language = target_language)
+        if method == 'Cinecast':
+            # 调用Cinecast API进行情绪配音
+            success = generate_tts_with_emotion_clone(
+                text=text,
+                start_time=line['start'],
+                end_time=line['end'],
+                vocal_audio_path=os.path.join(folder, 'audio_vocals.wav'),
+                output_audio_path=output_path,
+                emotion_voice="aiden"  # 默认音色
+            )
+            if not success:
+                logger.error(f"❌ Cinecast配音失败: {text}")
+                continue
         elif method == 'EdgeTTS':
             edge_tts(text, output_path, target_language = target_language, voice = voice)
+        
         start = line['start']
         end = line['end']
         length = end-start

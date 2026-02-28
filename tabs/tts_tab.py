@@ -24,7 +24,9 @@ class TTSTab(QWidget):
 
         # AI语音生成方法
         self.tts_method = QComboBox()
-        self.tts_method.addItems(['xtts', 'cosyvoice', 'EdgeTTS'])
+        self.tts_method.clear()  # 清空原有的
+        self.tts_method.addItems(['Cinecast'])  # 独尊 Cinecast
+        self.tts_method.setCurrentText('Cinecast')  # 默认选择Cinecast
         self.layout.addWidget(QLabel("AI语音生成方法"))
         self.layout.addWidget(self.tts_method)
 

@@ -302,56 +302,52 @@ def do_everything(root_folder, url, num_videos=5, resolution='1080p',
             return f"初始化模型失败: {str(e)}", None
 
         out_video = None
-        # 1. 确定视频源是网络还是本地
-        is_local_file = os.path.exists(url) and not url.startswith("http")
-        
-        if is_local_file:
-            logger.info(f"✅ 检测到本地视频文件: {url}")
-            original_file_path = url  # 绝对路径，直接使用
-            
-            # 获取原始视频文件名（不带路径）
-            original_file_name = os.path.basename(url)
-            
-            # 去除文件扩展名，生成文件夹名称
-            new_folder_name = os.path.splitext(original_file_name)[0]
-            
-            # 构建新文件夹的完整路径
-            new_folder_path = os.path.join(root_folder, new_folder_name)
-            
-            # 在 root_folder 下创建该文件夹
-            os.makedirs(new_folder_path, exist_ok=True)
-            
-            # 构建新位置的完整路径
-            new_file_path = os.path.join(new_folder_path, "download.mp4")
-            
-            # 将视频文件拷贝到新创建的文件夹中并重命名
+        if url.endswith('.mp4'):
             try:
-                # 如果原始文件就是目标文件，跳过 copy
-                if os.path.abspath(original_file_path) != os.path.abspath(new_file_path):
-                    shutil.copy(original_file_path, new_file_path)
-                    logger.info(f"✅ 成功将视频复制到工作区: {new_file_path}")
+                import shutil
+                # 获取原始视频文件名（不带路径）
+                original_file_name = os.path.basename(url)
+
+                # 去除文件扩展名，生成文件夹名称
+                new_folder_name = os.path.splitext(original_file_name)[0]
+
+                # 构建新文件夹的完整路径
+                new_folder_path = os.path.join(root_folder, new_folder_name)
+
+                # 在 root_folder 下创建该文件夹
+                os.makedirs(new_folder_path, exist_ok=True)
+
+                # 构建原始文件的完整路径
+                original_file_path = os.path.join(root_folder, original_file_name)
+
+                # 构建新位置的完整路径
+                new_file_path = os.path.join(new_folder_path, "download.mp4")
+
+                # 将视频文件移动到新创建的文件夹中并重命名
+                shutil.copy(original_file_path, new_file_path)
+                # 在 root_folder 下创建该文件夹
+                os.makedirs(new_folder_path, exist_ok=True)
+
+                success, output_video, error_msg = process_video(
+                    new_file_path, root_folder, resolution,
+                    demucs_model, device, shifts,
+                    asr_method, whisper_model, batch_size, diarization, whisper_min_speakers, whisper_max_speakers,
+                    translation_method, translation_target_language,
+                    tts_method, tts_target_language, voice,
+                    subtitles, speed_up, fps, background_music, bgm_volume, video_volume,
+                    target_resolution, max_retries, progress_callback
+                )
+
+                if success:
+                    logger.info(f"视频处理成功: {new_file_path}")
+                    return '处理成功', output_video
                 else:
-                    logger.info(f"ℹ️  视频已在正确位置，无需复制")
+                    logger.error(f"视频处理失败: {new_file_path}, 错误: {error_msg}")
+                    return f'处理失败: {error_msg}', None
             except Exception as e:
-                logger.error(f"❌ 视频拷贝失败，检查路径。源: {original_file_path}, 目标: {new_file_path}")
-                raise e
-                
-            success, output_video, error_msg = process_video(
-                new_file_path, root_folder, resolution,
-                demucs_model, device, shifts,
-                asr_method, whisper_model, batch_size, diarization, whisper_min_speakers, whisper_max_speakers,
-                translation_method, translation_target_language,
-                tts_method, tts_target_language, voice,
-                subtitles, speed_up, fps, background_music, bgm_volume, video_volume,
-                target_resolution, max_retries, progress_callback
-            )
-            
-            if success:
-                logger.info(f"✅ 视频处理成功: {new_file_path}")
-                return '处理成功', output_video
-            else:
-                logger.error(f"❌ 视频处理失败: {new_file_path}, 错误: {error_msg}")
-                return f'处理失败: {error_msg}', None
+                stack_trace = traceback.format_exc()
+                logger.error(f"处理本地视频失败: {str(e)}\n{stack_trace}")
+                return f"处理本地视频失败: {str(e)}", None
         else:
             try:
                 videos_info = []
