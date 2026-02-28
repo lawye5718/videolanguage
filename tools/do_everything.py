@@ -2,6 +2,7 @@ import json
 import os
 import time
 import traceback
+import shutil  # <--- 新增这一行
 
 import torch
 from loguru import logger
@@ -328,6 +329,10 @@ def do_everything(root_folder, url, num_videos=5, resolution='1080p',
             try:
                 # 如果原始文件就是目标文件，跳过 copy
                 if os.path.abspath(original_file_path) != os.path.abspath(new_file_path):
+                    # 新增：确保目标文件夹一定存在，如果不存在就自动创建
+                    os.makedirs(os.path.dirname(new_file_path), exist_ok=True)
+                    
+                    # 执行拷贝
                     shutil.copy(original_file_path, new_file_path)
                     logger.info(f"✅ 成功将视频复制到工作区: {new_file_path}")
                 else:
