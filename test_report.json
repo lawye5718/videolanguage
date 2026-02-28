@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-02-28 04:45:00",
+  "video_file": "/Users/yuanliang/Downloads/p.mp4",
+  "results": {
+    "environment": true,
+    "hf_token": true,
+    "file_ops": true,
+    "qwen_translation": false,
+    "cinecast_tts": false
+  },
+  "success_rate": "60.0%"
+}

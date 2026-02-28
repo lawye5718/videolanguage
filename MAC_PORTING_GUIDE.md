@@ -20,10 +20,21 @@
   - 添加跨平台内存清理函数
 
 ### 2. Cinecast TTS集成
-- **新增模块** (`tools/step045_tts_cinecast.py`):
+- **核心模块** (`tools/step045_tts_cinecast.py`):
   - 实现与本地Cinecast API的对接
   - 支持OpenAI兼容的TTS调用格式
+  - **智能情绪配音功能**：
+    - 音频智能切片（Smart Padding）
+    - 上下文感知的情绪保留
+    - 支持极短句子的智能填充（最小4秒）
+    - 多音色角色分配支持
   - 流式音频生成
+
+- **调度模块** (`tools/step040_tts_scheduler.py`):
+  - 批量TTS处理调度器
+  - 角色音色智能映射
+  - CSV字幕文件自动化处理
+  - 完整的工作流集成
 
 ### 3. 依赖管理优化
 - **requirements.txt**:
@@ -53,8 +64,27 @@ pip install -r requirements.txt
 
 ### 测试Cinecast集成
 ```bash
+# 基础TTS测试
 cd tools
 python step045_tts_cinecast.py
+
+# 情绪配音功能测试
+python -c "
+from step045_tts_cinecast import generate_tts_with_emotion_clone
+# 需要准备test_vocals.wav文件
+success = generate_tts_with_emotion_clone(
+    text='测试情绪配音',
+    start_time=5.0,
+    end_time=10.0,
+    vocal_audio_path='test_vocals.wav',
+    output_audio_path='emotion_test.mp3',
+    emotion_voice='aiden'
+)
+print('情绪配音测试:', '成功' if success else '失败')
+"
+
+# 批量处理测试
+python step040_tts_scheduler.py
 ```
 
 ### 内存监控
