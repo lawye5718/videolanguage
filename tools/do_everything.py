@@ -7,7 +7,7 @@ import shutil  # <--- 新增这一行
 import torch
 from loguru import logger
 from .step000_video_downloader import get_info_list_from_url, download_single_video, get_target_folder
-from .step010_demucs_vr import separate_all_audio_under_folder, init_demucs, release_model
+from .step010_demucs_vr import separate_all_audio_under_folder
 from .step020_asr import transcribe_all_audio_under_folder
 from .step021_asr_whisperx import init_whisperx, init_diarize
 from .step022_asr_funasr import init_funasr
@@ -277,6 +277,11 @@ def do_everything(root_folder, url, num_videos=5, resolution='1080p',
         success_list = []
         fail_list = []
         error_details = []
+        
+        # ==========================================
+        # 强制安全锁：无视界面传入的任何旧设置，强制使用 Cinecast
+        tts_method = "Cinecast"  # <--- 新增这行代码！
+        # ==========================================
 
         # 记录处理开始信息和所有参数
         logger.info("-" * 50)
