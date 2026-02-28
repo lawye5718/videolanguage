@@ -217,7 +217,7 @@ class FullAutoTab(QWidget):
             )
             summary_text += "● 翻译方式: {}\n".format(config.get("translation_method", "LLM"))
             summary_text += "● TTS方式: {}, 语言: {}\n".format(
-                config.get("tts_method", "EdgeTTS"),
+                config.get("tts_method", "Cinecast"),
                 config.get("target_language_tts", "中文")
             )
             summary_text += "● 添加字幕: {}, 加速倍数: {}\n".format(
@@ -313,7 +313,7 @@ class FullAutoTab(QWidget):
                 config.get('max_speakers', None),
                 config.get('translation_method', 'LLM'),
                 config.get('target_language_translation', '简体中文'),
-                config.get('tts_method', 'EdgeTTS'),
+                config.get('tts_method', 'Cinecast'),
                 config.get('target_language_tts', '中文'),
                 config.get('edge_tts_voice', 'zh-CN-XiaoxiaoNeural'),
                 config.get('add_subtitles', True),

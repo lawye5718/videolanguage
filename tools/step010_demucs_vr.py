@@ -6,6 +6,8 @@ import time
 from .utils import save_wav, normalize_wav
 import torch
 import gc
+import subprocess
+import sys
 
 # 全局变量
 auto_device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
@@ -16,59 +18,48 @@ current_model_config = {}  # 新增变量，存储当前加载模型的配置
 
 def init_demucs():
     """
-    初始化Demucs模型。
-    如果模型已经初始化，直接返回而不重新加载。
+    初始化Demucs。
+    对于命令行版本，这里只是验证环境。
     """
-    global separator, model_loaded
+    global model_loaded
     if not model_loaded:
-        separator = load_model()
-        model_loaded = True
+        logger.info("验证Demucs环境...")
+        try:
+            result = subprocess.run(['demucs', '--help'], 
+                                  capture_output=True, text=True, timeout=10)
+            if result.returncode == 0:
+                logger.info("✅ Demucs命令行工具可用")
+                model_loaded = True
+            else:
+                logger.error("❌ Demucs命令行工具不可用")
+                raise RuntimeError("Demucs命令行工具不可用")
+        except Exception as e:
+            logger.error(f"❌ Demucs环境检查失败: {e}")
+            raise
     else:
-        logger.info("Demucs模型已经加载，跳过初始化")
+        logger.info("Demucs环境已经验证，跳过初始化")
 
 
 def load_model(model_name: str = "htdemucs_ft", device: str = 'auto', progress: bool = True,
                shifts: int = 5):
     """
-    加载Demucs模型。
-    如果相同配置的模型已加载，直接返回现有模型而不重新加载。
+    返回模型配置信息。
+    对于命令行版本，不需要实际加载模型。
     """
-    global separator, model_loaded, current_model_config
-
-    if separator is not None:
-        # 检查是否需要重新加载模型（配置不同）
-        requested_config = {
-            'model_name': model_name,
-            'device': 'auto' if device == 'auto' else device,
-            'shifts': shifts
-        }
-
-        if current_model_config == requested_config:
-            logger.info(f'Demucs模型已加载且配置相同，重用现有模型')
-            return separator
-        else:
-            logger.info(f'Demucs模型配置改变，需要重新加载')
-            # 释放现有模型资源
-            release_model()
-
-    logger.info(f'加载Demucs模型: {model_name}')
-    t_start = time.time()
-
-    device_to_use = auto_device if device == 'auto' else device
-    separator = Separator(model_name, device=device_to_use, progress=progress, shifts=shifts)
-
+    global model_loaded, current_model_config
+    
+    # 验证环境
+    init_demucs()
+    
     # 存储当前模型配置
     current_model_config = {
         'model_name': model_name,
         'device': 'auto' if device == 'auto' else device,
         'shifts': shifts
     }
-
-    model_loaded = True
-    t_end = time.time()
-    logger.info(f'Demucs模型加载完成，用时 {t_end - t_start:.2f} 秒')
-
-    return separator
+    
+    logger.info(f'Demucs配置已设置: {current_model_config}')
+    return current_model_config
 
 
 def release_model():
