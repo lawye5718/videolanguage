@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import gc
 from loguru import logger
 from tools.step045_tts_cinecast import generate_tts_with_emotion_clone
 
@@ -63,6 +64,11 @@ def process_tts(subtitle_csv_path, vocals_path, output_dir, default_voice="aiden
             logger.info(f"✅ 第 {index} 句处理完成 ({success_count}/{total_count})")
         else:
             logger.error(f"❌ 第 {index} 句配音生成失败")
+        
+        # Mac统一内存保护：定期清理内存碎片
+        if index % 10 == 0:  # 每处理10句清理一次
+            gc.collect()
+            logger.debug(f"🧹 内存清理完成 (处理进度: {index}/{total_count})")
     
     logger.info(f"🏁 TTS处理完成: {success_count}/{total_count} 句成功")
     return success_count > 0
@@ -109,6 +115,11 @@ def process_tts_with_voice_mapping(subtitle_csv_path, vocals_path, output_dir, v
         if success:
             success_count += 1
             logger.info(f"✅ {character}({voice}): '{text[:20]}...' 处理完成")
+        
+        # Mac统一内存保护
+        if index % 10 == 0:
+            gc.collect()
+            logger.debug(f"🧹 内存清理完成 (角色: {character}, 进度: {index}/{len(df)})")
     
     logger.info(f"🏁 角色化TTS处理完成: {success_count}/{len(df)} 句成功")
     return success_count > 0
