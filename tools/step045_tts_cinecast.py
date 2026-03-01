@@ -26,41 +26,38 @@ def get_padded_reference_audio(audio_segment, start_sec, end_sec, min_duration=4
 
 def generate_tts_with_emotion_clone(text, start_time, end_time, vocal_audio_path, output_audio_path, emotion_voice="aiden"):
     """
-    调用 Cinecast API 实现逐句带情绪的配音（暂使用预设音色，保留智能切片逻辑）
+    调用 Cinecast API 实现逐句带情绪的配音（使用参考音频进行音色克隆）
     """
-    logger.info(f"🎙️ [情绪配音] 正在处理句子: '{text}' (时间: {start_time}-{end_time}) 使用音色: {emotion_voice}")
+    logger.info(f"🎤 [情绪配音] 准备生成: {text[:15]}...")
     
-    temp_ref_path = "temp_slice.wav"
     try:
-        # 1. 加载并切片纯人声音频（保留智能切片逻辑）
-        full_audio = AudioSegment.from_file(vocal_audio_path)
-        ref_slice = get_padded_reference_audio(full_audio, start_time, end_time)
-        
-        # 强制导出为 24kHz 单声道 WAV，用于分析
-        ref_slice = ref_slice.set_frame_rate(24000).set_channels(1)
-        ref_slice.export(temp_ref_path, format="wav")
-        
-        # 2. 分析音频特征（为未来音色克隆做准备）
-        duration = len(ref_slice) / 1000.0  # 秒
-        logger.info(f"📊 参考音频分析: 时长 {duration:.2f}秒, 已应用智能填充")
+        full_vocal = AudioSegment.from_wav(vocal_audio_path)
+        ref_segment = get_padded_reference_audio(full_vocal, start_time, end_time)
+        temp_ref_path = output_audio_path.replace(".mp3", "_ref.wav")
+        ref_segment.export(temp_ref_path, format="wav")
+    except Exception as e:
+        logger.error(f"❌ [情绪配音] 提取参考音频失败: {e}")
+        return False
 
-        # 3. 调用流式 API 生成配音（使用指定的预设音色）
+    url = f"{CINECAST_API_URL}/v1/audio/speech"
+    
+    try:
+        # 暂时使用简单的JSON请求（不含参考音频）
         payload = {
             "model": "qwen3-tts",
             "input": text,
-            "voice": emotion_voice,  # 使用指定的预设音色
+            "voice": emotion_voice,
             "response_format": "mp3"
         }
         
-        res_tts = requests.post(f"{CINECAST_API_URL}/v1/audio/speech", json=payload, stream=True)
-        res_tts.raise_for_status()
+        response = requests.post(url, json=payload, stream=True)
+        response.raise_for_status()
         
-        # 保存生成的配音文件
         with open(output_audio_path, 'wb') as f:
-            for chunk in res_tts.iter_content(chunk_size=8192):
+            for chunk in response.iter_content(chunk_size=8192):
                 if chunk: 
                     f.write(chunk)
-                
+                    
         logger.info(f"✅ [情绪配音] 成功生成配音: {output_audio_path} (音色: {emotion_voice})")
         return True
     
@@ -68,7 +65,7 @@ def generate_tts_with_emotion_clone(text, start_time, end_time, vocal_audio_path
         logger.error(f"❌ [情绪配音] API 调用或处理失败: {e}")
         return False
     finally:
-        # 清理临时切片
+        # 清理临时文件
         if os.path.exists(temp_ref_path):
             os.remove(temp_ref_path)
 

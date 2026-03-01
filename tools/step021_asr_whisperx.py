@@ -23,41 +23,51 @@ def init_whisperx():
 def init_diarize():
     load_diarize_model()
     
-def load_whisper_model(model_name: str = 'large', download_root = 'models/ASR/whisper', device='auto'):
-    if model_name == 'large':
-        pretrain_model = os.path.join(download_root,"faster-whisper-large-v3")
-        model_name = 'large-v3' if not os.path.isdir(pretrain_model) else pretrain_model
-        
-    global whisper_model
-    if whisper_model is not None:
-        return
-    if device == 'auto':
-        if torch.backends.mps.is_available():
-            device = 'mps'
-            compute_type = 'float32'  # Mac MPS 对 float16 支持不完善
-        else:
-            device = 'cpu'
-            compute_type = 'int8'
-    logger.info(f'Loading WhisperX model: {model_name}')
-    t_start = time.time()
-    if device == 'cpu':
-        whisper_model = whisperx.load_model(model_name, download_root=download_root, device=device, compute_type=compute_type)
-    elif device == 'mps':
-        whisper_model = whisperx.load_model(model_name, download_root=download_root, device=device, compute_type=compute_type)
-    else:
-        whisper_model = whisperx.load_model(model_name, download_root=download_root, device=device)
-    t_end = time.time()
-    logger.info(f'Loaded WhisperX model: {model_name} in {t_end - t_start:.2f}s')
+import whisperx
 
-def load_align_model(language='en', device='auto', model_dir='models/ASR/whisper'):
+# 确保文件顶部有这个全局变量初始化
+whisper_model = None
+
+def load_whisper_model(model_name, download_root=None, device="cpu"):
+    global whisper_model  # <--- ⚠️ 核心修复：必须声明它是全局变量！
+    
+    # 如果模型已经在内存里了，直接返回，秒启动
+    if whisper_model is not None:
+        return whisper_model
+        
+    if device == "cuda":
+        compute_type = "float16"
+    else:
+        # Mac CPU 使用 int8 降低内存占用
+        compute_type = "int8" 
+
+    print(f"▶️ Loading WhisperX model: {model_name} on {device} (compute_type: {compute_type})")
+    
+    try:
+        whisper_model = whisperx.load_model(
+            model_name, 
+            download_root=download_root, 
+            device=device, 
+            compute_type=compute_type
+        )
+    except Exception as e:
+        print(f"⚠️ {compute_type} 精度加载失败，尝试回退到基础 int8 精度... 错误信息: {e}")
+        compute_type = "int8"
+        whisper_model = whisperx.load_model(
+            model_name, 
+            download_root=download_root, 
+            device=device, 
+            compute_type=compute_type
+        )
+        
+    return whisper_model
+
+def load_align_model(language='en', device='cpu', model_dir='models/ASR/whisper'):
     global align_model, language_code, align_metadata
     if align_model is not None and language_code == language:
         return
-    if device == 'auto':
-        if torch.backends.mps.is_available():
-            device = 'mps'
-        else:
-            device = 'cpu'
+    # 强制使用CPU，避免MPS兼容性问题
+    device = 'cpu'
     language_code = language
     t_start = time.time()
     align_model, align_metadata = whisperx.load_align_model(
@@ -109,9 +119,9 @@ def whisperx_transcribe_audio(wav_path, model_name: str = 'large', download_root
         return False
     
     logger.info("▶️ 开始时间戳对齐...")
-    load_align_model(rec_result['language'])
+    load_align_model(rec_result['language'], device='cpu')
     rec_result = whisperx.align(rec_result['segments'], align_model, align_metadata,
-                                wav_path, device, return_char_alignments=False)
+                                wav_path, 'cpu', return_char_alignments=False)
     
     if diarization:
         logger.info("▶️ 开始说话人分离 (Diarization)...")

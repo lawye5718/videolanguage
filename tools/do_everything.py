@@ -163,6 +163,20 @@ def process_video(info, root_folder, resolution,
                 status, vocals_path, _ = separate_all_audio_under_folder(
                     folder, model_name=demucs_model, device=device, progress=True, shifts=shifts)
                 logger.info(f'人声分离完成: {vocals_path}')
+                
+                # ==========================================
+                # 桥接修复：确保ASR能找到分离出的人声文件
+                # ==========================================
+                if vocals_path and os.path.exists(vocals_path):
+                    # 创建安全的人声文件路径（在根目录下）
+                    safe_vocals_path = os.path.join(folder, "audio_vocals.wav")
+                    if os.path.abspath(vocals_path) != os.path.abspath(safe_vocals_path):
+                        import shutil
+                        shutil.copy(vocals_path, safe_vocals_path)
+                        print(f"🔗 [桥接修复] 已将纯人声复制到根目录供 ASR 识别: {safe_vocals_path}")
+                else:
+                    logger.error(f"❌ 找不到分离出的人声，无法进行识别！路径: {vocals_path}")
+                    return False, None, "人声分离文件不存在"
             except Exception as e:
                 stack_trace = traceback.format_exc()
                 error_msg = f'人声分离失败: {str(e)}\n{stack_trace}'

@@ -58,21 +58,17 @@ def separate_audio(folder, model_name="htdemucs_ft", device="auto", progress=Non
         print(f"❌ Demucs 执行失败: {e}")
         return None, None
 
-    # 找到 Demucs 默认的输出位置并移动出来
+    # 找到 Demucs 默认的输出位置 (不要去移动它们！)
     track_name = os.path.splitext(os.path.basename(audio_path))[0]
     demucs_out_dir = os.path.join(folder, model_name, track_name)
     
     gen_vocals = os.path.join(demucs_out_dir, "vocals.wav")
     gen_no_vocals = os.path.join(demucs_out_dir, "no_vocals.wav")
     
-    final_vocals = os.path.join(folder, "vocals.wav")
-    final_no_vocals = os.path.join(folder, "no_vocals.wav")
-    
     if os.path.exists(gen_vocals) and os.path.exists(gen_no_vocals):
-        shutil.move(gen_vocals, final_vocals)
-        shutil.move(gen_no_vocals, final_no_vocals)
-        print(f"✅ 人声分离成功！")
-        return final_vocals, final_no_vocals
+        print(f"✅ 人声分离成功！文件保留在原位: {demucs_out_dir}")
+        # 核心修复：直接返回它们在 htdemucs_ft 里的原始绝对路径！
+        return gen_vocals, gen_no_vocals
     else:
         print(f"❌ 找不到 Demucs 生成的文件于 {demucs_out_dir}")
         return None, None

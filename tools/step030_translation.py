@@ -175,7 +175,7 @@ def summarize(info, transcript, target_language='简体中文', method = 'LLM'):
                 {'role': 'user', 'content': full_description+retry_message},
             ]
             if method == 'LLM':
-                response = llm_response(messages)
+                response = qwen_response(messages)  # 改为调用Qwen API
             elif method == 'OpenAI':
                 response = openai_response(messages)
             elif method == 'Ernie':
@@ -280,7 +280,7 @@ def _translate(summary, transcript, target_language='简体中文', method='LLM'
                 # print(messages)
                 try:
                     if method == 'LLM':
-                        response = llm_response(messages)
+                        response = qwen_response(messages)  # 改为调用Qwen API
                     elif method == 'OpenAI':
                         response = openai_response(messages)
                     elif method == 'Ernie':

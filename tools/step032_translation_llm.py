@@ -25,7 +25,7 @@ def init_llm_model(model_name):
         model = AutoModelForCausalLM.from_pretrained(
             pretrained_path,
             torch_dtype="auto",
-            device_map="auto"
+            device_map="mps"  # 显式指定使用MPS设备
         )
         tokenizer = AutoTokenizer.from_pretrained(pretrained_path)
         print('Finish Load model', pretrained_path)

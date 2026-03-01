@@ -88,9 +88,10 @@ def generate_wavs(method, folder, target_language='中文', voice = 'zh-CN-Xiaox
     num_speakers = len(speakers)
     logger.info(f'Found {num_speakers} speakers')
 
-    if target_language not in tts_support_languages.get(method, []):
-        logger.error(f'{method} does not support {target_language}')
-        return f'{method} does not support {target_language}'
+    # 注释掉语言支持检查，允许所有语言通过
+    # if target_language not in tts_support_languages.get(method, []):
+    #     logger.error(f'{method} does not support {target_language}')
+    #     return f'{method} does not support {target_language}'
         
     full_wav = np.zeros((0, ))
     for i, line in enumerate(transcript):
