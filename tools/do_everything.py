@@ -160,9 +160,17 @@ def process_video(info, root_folder, resolution,
                 progress_callback(progress_base, stage_name)
 
             try:
-                status, vocals_path, _ = separate_all_audio_under_folder(
-                    folder, model_name=demucs_model, device=device, progress=True, shifts=shifts)
-                logger.info(f'人声分离完成: {vocals_path}')
+                # 在调用 Demucs 前，加上这个判断：
+                vocals_path = os.path.join(folder, "audio_vocals.wav")
+                if os.path.exists(vocals_path):
+                    logger.info(f"⏭️ 已检测到纯人声文件 {vocals_path}，跳过 Demucs 音频分离。")
+                    vocals_path = vocals_path  # 保持变量一致
+                else:
+                    # 这里放原本的 Demucs 分离代码
+                    logger.info(f"▶️ 准备分离音频: 文件夹={folder}")
+                    status, vocals_path, _ = separate_all_audio_under_folder(
+                        folder, model_name=demucs_model, device=device, progress=True, shifts=shifts)
+                    logger.info(f'人声分离完成: {vocals_path}')
                 
                 # ==========================================
                 # 桥接修复：确保ASR能找到分离出的人声文件

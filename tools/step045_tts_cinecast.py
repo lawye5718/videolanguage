@@ -30,10 +30,11 @@ def generate_tts_with_emotion_clone(text, start_time, end_time, vocal_audio_path
     """
     logger.info(f"🎤 [情绪配音] 准备生成: {text[:15]}...")
     
+    # 提取参考音频
+    temp_ref_path = output_audio_path.replace(".wav", "_ref.wav")
     try:
         full_vocal = AudioSegment.from_wav(vocal_audio_path)
         ref_segment = get_padded_reference_audio(full_vocal, start_time, end_time)
-        temp_ref_path = output_audio_path.replace(".mp3", "_ref.wav")
         ref_segment.export(temp_ref_path, format="wav")
     except Exception as e:
         logger.error(f"❌ [情绪配音] 提取参考音频失败: {e}")
@@ -41,22 +42,40 @@ def generate_tts_with_emotion_clone(text, start_time, end_time, vocal_audio_path
 
     url = f"{CINECAST_API_URL}/v1/audio/speech"
     
+    # 构造兼容的 Form 数据
+    data = {
+        "model": "qwen3-tts",
+        "input": str(text),
+        "voice": str(emotion_voice),
+        "response_format": "mp3"
+    }
+    
     try:
-        # 暂时使用简单的JSON请求（不含参考音频）
-        payload = {
-            "model": "qwen3-tts",
-            "input": text,
-            "voice": emotion_voice,
-            "response_format": "mp3"
-        }
-        
-        response = requests.post(url, json=payload, stream=True)
-        response.raise_for_status()
-        
-        with open(output_audio_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                if chunk: 
-                    f.write(chunk)
+        with open(temp_ref_path, 'rb') as ref_file:
+            files = {
+                'reference_audio': ('ref.wav', ref_file, 'audio/wav')
+            }
+            
+            # 使用 data 和 files，触发带有参考音频的情感克隆
+            response = requests.post(url, data=data, files=files, stream=True)
+            
+            if response.status_code != 200:
+                logger.error(f"❌ 详细的API拒绝原因: {response.text}")
+            response.raise_for_status()
+            
+            # 💡 【关键修复】：先保存为 mp3
+            temp_mp3_path = output_audio_path.replace(".wav", ".mp3")
+            with open(temp_mp3_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk: 
+                        f.write(chunk)
+            
+            # 💡 【关键修复】：将其转换为血统纯正的 WAV 格式，供 librosa 读取
+            AudioSegment.from_file(temp_mp3_path).export(output_audio_path, format="wav")
+            
+            # 清理临时的 mp3 文件
+            if os.path.exists(temp_mp3_path):
+                os.remove(temp_mp3_path)
                     
         logger.info(f"✅ [情绪配音] 成功生成配音: {output_audio_path} (音色: {emotion_voice})")
         return True
@@ -65,43 +84,41 @@ def generate_tts_with_emotion_clone(text, start_time, end_time, vocal_audio_path
         logger.error(f"❌ [情绪配音] API 调用或处理失败: {e}")
         return False
     finally:
-        # 清理临时文件
+        # 清理临时的参考音频文件
         if os.path.exists(temp_ref_path):
             os.remove(temp_ref_path)
 
 def generate_tts_cinecast(text, output_path, voice_id="aiden"):
     """
-    调用本地 Mac mini 上的 Cinecast 兼容 OpenAI 格式 API
+    备用：普通文本转语音调用
     """
-    url = "http://localhost:8888/v1/audio/speech"
-    payload = {
+    url = f"{CINECAST_API_URL}/v1/audio/speech"
+    data = {
         "model": "qwen3-tts",
-        "input": text,
-        "voice": voice_id,
+        "input": str(text),
+        "voice": str(voice_id),
         "response_format": "mp3"
     }
     
     try:
-        response = requests.post(url, json=payload, stream=True)
+        files = {'dummy': ('', '')}
+        response = requests.post(url, data=data, files=files, stream=True)
+        if response.status_code != 200:
+            logger.error(f"❌ 详细的API拒绝原因: {response.text}")
         response.raise_for_status()
         
-        # 流式写入文件
-        with open(output_path, 'wb') as f:
+        # 同步应用格式转换修复
+        temp_mp3_path = output_path.replace(".wav", ".mp3")
+        with open(temp_mp3_path, 'wb') as f:
             for chunk in response.iter_content(chunk_size=8192):
-                if chunk:
-                    f.write(chunk)
+                if chunk: f.write(chunk)
+                
+        AudioSegment.from_file(temp_mp3_path).export(output_path, format="wav")
+        if os.path.exists(temp_mp3_path):
+            os.remove(temp_mp3_path)
+            
         logger.info(f"[Cinecast TTS] 成功生成音频: {output_path}")
         return True
     except Exception as e:
         logger.error(f"[Cinecast TTS] API 调用失败: {e}")
         return False
-
-# 用于测试
-if __name__ == "__main__":
-    test_text = "这是Cinecast TTS集成测试"
-    output_file = "test_cinecast_tts.mp3"
-    success = generate_tts_cinecast(test_text, output_file)
-    if success:
-        print(f"测试成功，音频文件已保存为: {output_file}")
-    else:
-        print("测试失败")

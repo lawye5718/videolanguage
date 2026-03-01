@@ -1,0 +1,54 @@
+[02:22:29] 系统初始化完成，准备就绪
+[02:22:39] 已选择本地视频文件: /Users/yuanliang/Downloads/p.mp4
+[02:22:42] --------------------------------------------------
+[02:22:42] 开始处理 - 2026-03-01 02:22:42
+[02:22:42] 视频URL: /Users/yuanliang/Downloads/p.mp4
+[02:22:42] 开始处理...
+[02:22:42] 进度更新: 0% - 初始化处理...
+[02:22:42] 视频文件夹: videos
+[02:22:42] 视频URL: /Users/yuanliang/Downloads/p.mp4
+[02:22:42] 分辨率: 1080p
+[02:22:42] --------------------------------------------------
+[02:22:42] 处理参数:
+[02:22:42] 下载视频数量: 5
+[02:22:42] 分辨率: 1080p
+[02:22:42] 人声分离模型: htdemucs_ft
+[02:22:42] 计算设备: auto
+[02:22:42] 移位次数: 5
+[02:22:42] ASR模型: WhisperX
+[02:22:42] WhisperX模型大小: large
+[02:22:42] 翻译方法: LLM
+[02:22:42] TTS方法: EdgeTTS
+[02:22:42] --------------------------------------------------
+[02:22:42] 进度更新: 5% - 下载视频... (5%)
+[02:22:48] 进度更新: 100% - 处理完成!
+[02:22:48] 处理完成: 处理失败: 语音合成失败: zero-size array to reduction operation maximum which has no identity
+Traceback (most recent call last):
+  File "/Users/yuanliang/superstar/superstar3.1/projects/videolanguage/tools/do_everything.py", line 239, in process_video
+    status, synth_path, _ = generate_all_wavs_under_folder(
+  File "/Users/yuanliang/superstar/superstar3.1/projects/videolanguage/tools/step040_tts.py", line 170, in generate_all_wavs_under_folder
+    wav_combined, wav_ori = generate_wavs(method, root, target_language, voice)
+  File "/Users/yuanliang/superstar/superstar3.1/projects/videolanguage/tools/step040_tts.py", line 143, in generate_wavs
+    full_wav = full_wav / np.max(np.abs(full_wav)) * np.max(np.abs(vocal_wav))
+  File "/Users/yuanliang/miniforge3/envs/videolang/lib/python3.10/site-packages/numpy/core/fromnumeric.py", line 2810, in max
+    return _wrapreduction(a, np.maximum, 'max', axis, None, out,
+  File "/Users/yuanliang/miniforge3/envs/videolang/lib/python3.10/site-packages/numpy/core/fromnumeric.py", line 88, in _wrapreduction
+    return ufunc.reduce(obj, axis, dtype, out, **passkwargs)
+ValueError: zero-size array to reduction operation maximum which has no identity
+
+[02:22:48] 处理完成 - 2026-03-01 02:22:48
+[02:22:48] 结果: 处理失败: 语音合成失败: zero-size array to reduction operation maximum which has no identity
+Traceback (most recent call last):
+  File "/Users/yuanliang/superstar/superstar3.1/projects/videolanguage/tools/do_everything.py", line 239, in process_video
+    status, synth_path, _ = generate_all_wavs_under_folder(
+  File "/Users/yuanliang/superstar/superstar3.1/projects/videolanguage/tools/step040_tts.py", line 170, in generate_all_wavs_under_folder
+    wav_combined, wav_ori = generate_wavs(method, root, target_language, voice)
+  File "/Users/yuanliang/superstar/superstar3.1/projects/videolanguage/tools/step040_tts.py", line 143, in generate_wavs
+    full_wav = full_wav / np.max(np.abs(full_wav)) * np.max(np.abs(vocal_wav))
+  File "/Users/yuanliang/miniforge3/envs/videolang/lib/python3.10/site-packages/numpy/core/fromnumeric.py", line 2810, in max
+    return _wrapreduction(a, np.maximum, 'max', axis, None, out,
+  File "/Users/yuanliang/miniforge3/envs/videolang/lib/python3.10/site-packages/numpy/core/fromnumeric.py", line 88, in _wrapreduction
+    return ufunc.reduce(obj, axis, dtype, out, **passkwargs)
+ValueError: zero-size array to reduction operation maximum which has no identity
+
+[02:22:48] 未生成视频或视频路径无效

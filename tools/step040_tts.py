@@ -100,21 +100,27 @@ def generate_wavs(method, folder, target_language='中文', voice = 'zh-CN-Xiaox
         output_path = os.path.join(output_folder, f'{str(i).zfill(4)}.wav')
         speaker_wav = os.path.join(folder, 'SPEAKER', f'{speaker}.wav')
         
-        if method == 'Cinecast':
-            # 调用Cinecast API进行情绪配音
-            success = generate_tts_with_emotion_clone(
-                text=text,
-                start_time=line['start'],
-                end_time=line['end'],
-                vocal_audio_path=os.path.join(folder, 'audio_vocals.wav'),
-                output_audio_path=output_path,
-                emotion_voice="aiden"  # 默认音色
-            )
-            if not success:
-                logger.error(f"❌ Cinecast配音失败: {text}")
-                continue
-        elif method == 'EdgeTTS':
-            edge_tts(text, output_path, target_language = target_language, voice = voice)
+        # 在调用 generate_tts_cinecast 或 edge_tts 之前加上：
+        if os.path.exists(output_path):  # output_path 是当前这一句将要保存的 mp3 路径
+            logger.info(f"⏭️ 配音已存在，跳过: {output_path}")
+            success = True  # 标记为成功，继续处理
+        else:
+            if method == 'Cinecast':
+                # 调用Cinecast API进行情绪配音
+                success = generate_tts_with_emotion_clone(
+                    text=text,
+                    start_time=line['start'],
+                    end_time=line['end'],
+                    vocal_audio_path=os.path.join(folder, 'audio_vocals.wav'),
+                    output_audio_path=output_path,
+                    emotion_voice="aiden"  # 默认音色
+                )
+                if not success:
+                    logger.error(f"❌ Cinecast配音失败: {text}")
+                    continue
+            elif method == 'EdgeTTS':
+                edge_tts(text, output_path, target_language = target_language, voice = voice)
+                success = True
         
         start = line['start']
         end = line['end']
@@ -134,12 +140,38 @@ def generate_wavs(method, folder, target_language='中文', voice = 'zh-CN-Xiaox
         line['end'] = start + length
         
     vocal_wav, sr = librosa.load(os.path.join(folder, 'audio_vocals.wav'), sr=24000)
+    
+    # 【添加这里的保护代码】
+    if len(full_wav) == 0 or np.max(np.abs(full_wav)) == 0:
+        logger.error("❌ 所有TTS生成均失败或为空，跳过音频合并！")
+        return None, None
+        
+    # 原本的代码：
     full_wav = full_wav / np.max(np.abs(full_wav)) * np.max(np.abs(vocal_wav))
     save_wav(full_wav, os.path.join(folder, 'audio_tts.wav'))
     with open(transcript_path, 'w', encoding='utf-8') as f:
         json.dump(transcript, f, indent=2, ensure_ascii=False)
     
-    instruments_wav, sr = librosa.load(os.path.join(folder, 'audio_instruments.wav'), sr=24000)
+    # --- 智能寻找伴奏文件 ---
+    instruments_path = os.path.join(folder, 'audio_instruments.wav')
+    # 如果找不到默认的伴奏文件，去尝试找 no_vocals.wav
+    if not os.path.exists(instruments_path):
+        # 兼容 Demucs 的默认输出路径
+        demucs_bgm_path = os.path.join(folder, 'htdemucs_ft', 'download', 'no_vocals.wav')
+        # 兼容可能已经被复制到根目录的情况
+        root_bgm_path = os.path.join(folder, 'no_vocals.wav')
+        
+        if os.path.exists(root_bgm_path):
+            instruments_path = root_bgm_path
+        elif os.path.exists(demucs_bgm_path):
+            instruments_path = demucs_bgm_path
+        else:
+            logger.error(f"❌ 找不到伴奏文件！请检查 {folder} 下是否有 no_vocals.wav")
+            return None, None
+            
+    logger.info(f"🎵 加载背景伴奏: {instruments_path}")
+    instruments_wav, sr = librosa.load(instruments_path, sr=24000)
+    # --- 智能寻找伴奏文件结束 ---
     len_full_wav = len(full_wav)
     len_instruments_wav = len(instruments_wav)
     
